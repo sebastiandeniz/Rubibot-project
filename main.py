@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import kociemba as Cube
 import colorama
-import serial
-import time
-
-ser = serial.Serial("COM7", 9600, timeout=1)
-time.sleep(2)
+# import serial
+# import time
+import random
+# ser = serial.Serial("COM7", 9600, timeout=1)
+# time.sleep(2)
 
 GREEN = colorama.Fore.GREEN
 GRAY = colorama.Fore.LIGHTBLACK_EX
@@ -107,7 +107,7 @@ solved = False
 cap = cv2.VideoCapture(0)
 cv2.namedWindow('frame')
 
-
+#Rotaciones horario
 def rotate(side):
     main = state[side]
     front = state['front']
@@ -118,27 +118,18 @@ def rotate(side):
     back = state['back']
 
     if side == 'front':
-        left[2], left[5], left[8], up[6], up[7], up[8], right[0], right[3], right[6], down[0], down[1], down[2] = down[
-                                                                                                                      0], \
-                                                                                                                  down[
-                                                                                                                      1], \
-                                                                                                                  down[
-                                                                                                                      2], \
-                                                                                                                  left[
-                                                                                                                      8], \
-                                                                                                                  left[
-                                                                                                                      5], \
-                                                                                                                  left[
-                                                                                                                      2], \
+        left[2], left[5], left[8], up[6], up[7], up[8], right[0], right[3], right[6], down[0], down[1], down[2] = down[0], \
+                                                                                                                  down[1], \
+                                                                                                                  down[2], \
+                                                                                                                  left[8], \
+                                                                                                                  left[5], \
+                                                                                                                  left[2], \
                                                                                                                   up[6], \
                                                                                                                   up[7], \
                                                                                                                   up[8], \
-                                                                                                                  right[
-                                                                                                                      6], \
-                                                                                                                  right[
-                                                                                                                      3], \
-                                                                                                                  right[
-                                                                                                                      0]
+                                                                                                                  right[6], \
+                                                                                                                  right[3], \
+                                                                                                                  right[0]
     elif side == 'up':
         left[0], left[1], left[2], back[0], back[1], back[2], right[0], right[1], right[2], front[0], front[1], front[
             2] = front[0], front[1], front[2], left[0], left[1], left[2], back[0], back[1], back[2], right[0], right[1], \
@@ -217,7 +208,7 @@ def rotate(side):
     main[0], main[1], main[2], main[3], main[4], main[5], main[6], main[7], main[8] = main[6], main[3], main[0], main[
         7], main[4], main[1], main[8], main[5], main[2]
 
-
+#rotaciones antihorario
 def revrotate(side):
     main = state[side]
     front = state['front']
@@ -292,9 +283,9 @@ def revrotate(side):
                                                                                                                       5], \
                                                                                                                   back[
                                                                                                                       2], \
-                                                                                                                  up[0], \
-                                                                                                                  up[3], \
                                                                                                                   up[6], \
+                                                                                                                  up[3], \
+                                                                                                                  up[0], \
                                                                                                                   front[
                                                                                                                       0], \
                                                                                                                   front[
@@ -328,6 +319,7 @@ def revrotate(side):
         1], main[4], main[7], main[0], main[3], main[6]
 
 
+#devuelve los movimientos solucion. No cambia el estado del cubo
 def solve(state):
     raw = ''
     for i in state:
@@ -336,21 +328,27 @@ def solve(state):
     # print(Cube.solve(raw), ' ')
     sol = Cube.solve(raw) + " "
     print(sol)
-    ser.write(sol.encode('ascii'))
+    #ser.write(sol.encode('ascii'))
     return Cube.solve(raw)
+
+#Funcion que genera una secuencia aleatoria de movimientos
+def mix(moves=5):
+    movimientos = ["U", "U'", "U2", "F", "F'", "F2", "R", "R'", "R2", "B", "B'", "B2", "L", "L'", "L2", "D", "D'", "D2"]
+    secuencia_aleatoria = [random.choice(movimientos) for _ in range(moves)]
+    return " ".join(secuencia_aleatoria)
 
 
 def color_detect(h, s, v):
     # print(h,s,v)
     if h > 170 and s > 100:
         return 'red'
-    elif h < 16 and h > 8 and s > 100:
+    elif h < 16 and h > 5 and s > 70:
         return 'orange'
-    elif h <= 40 and h > 17 and s > 30:
+    elif h <= 35 and h > 17 and s > 30:
         return 'yellow'
-    elif h >= 70 and h <= 85 and s > 36:
+    elif h >= 50 and h <= 85 and s > 36:
         return 'green'
-    elif h > 100 and h <= 140 and s > 70:
+    elif h > 80 and h <= 140 and s > 40:
         return 'blue'
 
     return 'white'
@@ -387,14 +385,15 @@ def fill_stickers(frame, stickers, sides):
             num += 1
 
 
+#Recibe una secuencia de movimientos y ejecuta las rotaciones en el estado del cubo
 def process(operation):
     replace = {
-        "F1": [rotate, 'front'],
-        "F21": [rotate, 'front', 'front'],
-        "F1'": [revrotate, 'front'],
-        "U1": [rotate, 'up'],
-        "U21": [rotate, 'up', 'up'],
-        "U1'": [revrotate, 'up'],
+        "F": [rotate, 'front'],
+        "F2": [rotate, 'front', 'front'],
+        "F'": [revrotate, 'front'],
+        "U": [rotate, 'up'],
+        "U2": [rotate, 'up', 'up'],
+        "U'": [revrotate, 'up'],
         "L": [rotate, 'left'],
         "L2": [rotate, 'left', 'left'],
         "L'": [revrotate, 'left'],
@@ -409,15 +408,17 @@ def process(operation):
         "B'": [revrotate, 'back']
     }
     a = 0
-    # for i in operation:
-    #     for j in range(len(replace[i]) - 1):
-    #         replace[i][0](replace[i][j + 1])
-    #     cv2.putText(preview, i, (700, a + 50), font, 1, (0, 255, 0), 1, cv2.LINE_AA)
-    #     fill_stickers(preview, stickers, state)
-    #     solution.append(preview)
-    #     cv2.imshow('solution', preview)
-    #     cv2.waitKey()
-    #     cv2.putText(preview, i, (700, 50), font, 1, (0, 0, 0), 1, cv2.LINE_AA)
+
+    for i in operation:
+         for j in range(len(replace[i]) - 1):
+             replace[i][0](replace[i][j + 1])
+        #Representación gráfica paso a paso de la solución (no nos interesa)
+         #cv2.putText(preview, i, (700, a + 50), font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+         #fill_stickers(preview, stickers, state)
+         #solution.append(preview)
+         #cv2.imshow('solution', preview)
+         #cv2.waitKey()
+         #cv2.putText(preview, i, (700, 50), font, 1, (0, 0, 0), 1, cv2.LINE_AA)
 
 
 if __name__ == '__main__':
@@ -428,7 +429,6 @@ if __name__ == '__main__':
         hsv = []
         current_state = []
         ret, img = cap.read()
-        # img = cv2.flip(img, 1)
         frame = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         mask = np.zeros(frame.shape, dtype=np.uint8)
 
@@ -468,9 +468,13 @@ if __name__ == '__main__':
             state['front'] = current_state
         elif k == ord('b'):
             check_state.append('b')
-            state['back'] = current_state
-        elif k == ord('\r'):
-            # process(["R","R'"])
+            state['back'] = current_state    
+        elif k == ord('m'): #Al pulsar 'm' se crea una secuencia, se imprime y se cambia el estado del cubo con process()
+            secuencia_mezcla = mix()
+            print(secuencia_mezcla + ' ')
+            operation = secuencia_mezcla.split(' ')
+            process(operation)
+        elif k == ord('\r'): #Al pusar enter resuelve el cubo, se imprime y se cambia el estado del cubo
             if len(set(check_state)) == 6:
                 try:
                     solved = solve(state)
@@ -487,4 +491,4 @@ if __name__ == '__main__':
         cv2.imshow('frame', img[0:500, 0:500])
 
     cv2.destroyAllWindows()
-    ser.close()
+    #ser.close()
