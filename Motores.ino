@@ -30,8 +30,9 @@ void setup() {
 }
 
 
+// Definimos la funcion rotacion sentido horario
 void rotation_C(int stepPin, int dirPin, int numSteps) {
-  digitalWrite(dirPin, LOW); // Assuming LOW is the forward direction, adjust if necessary
+  digitalWrite(dirPin, LOW); 
   for (int x = 0; x < numSteps; x++) {
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(microseg);
@@ -41,8 +42,9 @@ void rotation_C(int stepPin, int dirPin, int numSteps) {
   delay(pausa);
 }
 
+// Definimos la funcion rotacion sentido antihorario
 void rotation_CC(int stepPin, int dirPin, int numSteps) {
-  digitalWrite(dirPin, HIGH); // Assuming LOW is the forward direction, adjust if necessary
+  digitalWrite(dirPin, HIGH); 
   for (int x = 0; x < numSteps; x++) {
     digitalWrite(stepPin, HIGH);
     delayMicroseconds(microseg);
@@ -54,7 +56,6 @@ void rotation_CC(int stepPin, int dirPin, int numSteps) {
 
 int getStepPin(String option) {
   // Función para obtener el pin de paso correspondiente a la opción
-  // Puedes agregar más casos según tus necesidades
   if (option == "F" || option == "F2" || option == "F'") {
     return stepPinF;
   } else if (option == "R" || option == "R2" || option == "R'") {
@@ -72,7 +73,6 @@ int getStepPin(String option) {
 
 int getDirPin(String option) {
   // Función para obtener el pin de dirección correspondiente a la opción
-  // Puedes agregar más casos según tus necesidades
   if (option == "F" || option == "F2" || option == "F'") {
     return dirPinF;
   } else if (option == "R" || option == "R2" || option == "R'") {
@@ -99,7 +99,8 @@ void loop() {
     } else if  (option == "F'" | option == "B'" | option == "R'" | option == "L'" | option == "U'" | option == "D'"){
       rotation_CC(getStepPin(option), getDirPin(option), 50);
     }
-    // Movimientos dobles (XD)
+    
+    // Movimientos dobles (Mover caras opuestas de forma simultanea)
     if (option == "FB" || option == "BF") {
       digitalWrite(dirPinF, LOW);
       digitalWrite(dirPinB, LOW);
@@ -141,10 +142,10 @@ void loop() {
       digitalWrite(dirPinB, HIGH);
       for (int x = 0; x < 50; x++) {
         digitalWrite(stepPinF, HIGH);
-        digitalWrite(stepPinB, HIGH); // Mantener HIGH antes de delay
+        digitalWrite(stepPinB, HIGH); 
         delayMicroseconds(microseg);
         digitalWrite(stepPinF, LOW);
-        digitalWrite(stepPinB, LOW); // Mantener LOW después de delay
+        digitalWrite(stepPinB, LOW); 
         delayMicroseconds(microseg);
       }
       delay(pausa);
